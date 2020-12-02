@@ -1,0 +1,49 @@
+#!/bin/bash
+
+/usr/bin/tmux "kill-session" -t "friskola-access"
+
+door="$(jq -rc ".[\"$(hostname)\"] | .\"1\"" /usr/local/etc/doors.json)"
+if [ "${door}" != "null" ]
+then
+    name="$(echo ${door} | jq -rc ".name")"
+    type="$(echo ${door} | jq -rc ".type")"
+    /usr/bin/tmux "new-session" -d -s "friskola-access" -n "dashboard"   -- "python3 /usr/local/share/${type}_door.py --door-number 1 --database /usr/local/etc/access.sqlite --door-name ${name} | tee -a /var/log/${name}.log"
+else
+    /usr/bin/tmux "new-session" -d -s "friskola-access" -n "dashboard"   -- "watch -n 600 echo 'No door 1'"
+fi
+
+door="$(jq -rc ".[\"$(hostname)\"] | .\"2\"" /usr/local/etc/doors.json)"
+/usr/bin/tmux "select-window" -t "friskola-access:dashboard"
+/usr/bin/tmux "select-pane" -t "0"
+if [ "${door}" != "null" ]
+then
+    name="$(echo ${door} | jq -rc ".name")"
+    type="$(echo ${door} | jq -rc ".type")"
+    /usr/bin/tmux "split-window" -t "friskola-access:dashboard" -v -p 50 -- "python3 /usr/local/share/${type}_door.py --door-number 2 --database /usr/local/etc/access.sqlite --door-name ${name} | tee -a /var/log/${name}.log"
+else
+    /usr/bin/tmux "split-window" -t "friskola-access:dashboard" -v -p 50 -- "watch -n 600 echo 'No door 2'"
+fi
+
+door="$(jq -rc ".[\"$(hostname)\"] | .\"3\"" /usr/local/etc/doors.json)"
+/usr/bin/tmux "select-window" -t "friskola-access:dashboard"
+/usr/bin/tmux "select-pane" -t "0"
+if [ "${door}" != "null" ]
+then
+    name="$(echo ${door} | jq -rc ".name")"
+    type="$(echo ${door} | jq -rc ".type")"
+    /usr/bin/tmux "split-window" -t "friskola-access:dashboard" -h -p 50 -- "python3 /usr/local/share/${type}_door.py --door-number 3 --database /usr/local/etc/access.sqlite --door-name ${name} | tee -a /var/log/${name}.log"
+else
+    /usr/bin/tmux "split-window" -t "friskola-access:dashboard" -h -p 50 -- "watch -n 600 echo 'No door 3'"
+fi
+
+door="$(jq -rc ".[\"$(hostname)\"] | .\"4\"" /usr/local/etc/doors.json)"
+/usr/bin/tmux "select-window" -t "friskola-access:dashboard"
+/usr/bin/tmux "select-pane" -t "2"
+if [ "${door}" != "null" ]
+then
+    name="$(echo ${door} | jq -rc ".name")"
+    type="$(echo ${door} | jq -rc ".type")"
+    /usr/bin/tmux "split-window" -t "friskola-access:dashboard" -h -p 50 -- "python3 /usr/local/share/${type}_door.py --door-number 4 --database /usr/local/etc/access.sqlite --door-name ${name} | tee -a /var/log/${name}.log"
+else
+    /usr/bin/tmux "split-window" -t "friskola-access:dashboard" -h -p 50 -- "watch -n 600 echo 'No door 4'"
+fi

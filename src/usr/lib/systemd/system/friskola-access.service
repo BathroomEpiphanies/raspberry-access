@@ -1,0 +1,18 @@
+[Unit]
+Description=Friskola Access System
+After=networking.service
+
+[Service]
+User=root
+Type=forking
+ExecStart=/usr/local/bin/friskola-access
+ExecStop=/usr/bin/tmux "kill-session" -t "friskola-access"
+WorkingDirectory=/tmp
+StartLimitIntervalSec=60
+StartLimitBurst=5
+StartLimitAction=none
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

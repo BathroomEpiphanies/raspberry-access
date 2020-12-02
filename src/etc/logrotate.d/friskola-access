@@ -1,0 +1,6 @@
+/var/log/door*.log {
+  rotate 24
+  monthly
+  compress
+  missingok
+}
