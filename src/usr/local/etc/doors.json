@@ -1,11 +1,12 @@
 {
     "door-chuset-djurhuset":  { "1": {"name":"door-chuset-djurhuset",  "type": "uart"   }, "2": null, "3": null, "4": null },
-    "door-chuset-gymnastik":  { "1": {"name":"door-chuset-cafe",       "type": "uart"   }, "2": null, "3": null, "4": null },
+    "door-chuset-gymnastik":  { "1": {"name":"door-chuset-gymnastik",  "type": "uart"   }, "2": null, "3": null, "4": null },
     "door-chuset-uteplats":   { "1": {"name":"door-chuset-uteplats",   "type": "uart"   }, "2": null, "3": null, "4": null },
     "door-chuset-vattentorn": { "1": {"name":"door-chuset-vattentorn", "type": "uart"   }, "2": null, "3": null, "4": null },
     "door-djurhuset":         { "1": {"name":"door-djurhuset",         "type": "wiegand"}, "2": null, "3": null, "4": null },
     "door-lhuset-cafe":       { "1": {"name":"door-lhuset-cafe",       "type": "uart"   }, "2": null, "3": null, "4": null },
     "door-mhuset-6md":        { "1": {"name":"door-mhuset-6md",        "type": "wiegand"}, "2": null, "3": null, "4": null },
     "door-mhuset-6nv":        { "1": {"name":"door-mhuset-6nv",        "type": "wiegand"}, "2": null, "3": null, "4": null },
-    "door-phuset-manga":      { "1": {"name":"door-phuset-manga",      "type": "uart"   }, "2": null, "3": null, "4": null }
+    "door-phuset-manga":      { "1": {"name":"door-phuset-manga",      "type": "uart"   }, "2": null, "3": null, "4": null },
+    "door-phuset-multisalen": { "1": {"name":"door-phuset-multisalen", "type": "uart"   }, "2": null, "3": null, "4": null }
 }
