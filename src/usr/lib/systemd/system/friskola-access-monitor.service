@@ -1,12 +1,11 @@
 [Unit]
-Description=Friskola Access System
+Description=Friskola Access System - Monitor
 After=networking.service
 
 [Service]
 User=root
 Type=forking
-ExecStart=/usr/local/bin/friskola-access
-ExecStop=/usr/bin/tmux "kill-session" -t "friskola-access"
+ExecStart=/usr/local/bin/friskola-access-monitor
 WorkingDirectory=/tmp
 StartLimitIntervalSec=60
 StartLimitBurst=5

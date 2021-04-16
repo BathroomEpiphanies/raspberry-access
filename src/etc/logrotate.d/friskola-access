@@ -1,6 +1,6 @@
-/var/log/door*.log {
-  rotate 24
-  monthly
+/var/log/friskola-access-door*.log {
+  rotate 52
+  weekly
   compress
   missingok
 }

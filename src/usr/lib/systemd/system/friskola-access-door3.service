@@ -1,0 +1,17 @@
+[Unit]
+Description=Friskola Access System - Door 3
+After=networking.service
+StartLimitInterval=60
+StartLimitBurst=5
+
+[Service]
+User=root
+Type=simple
+ExecStart=/usr/local/bin/friskola-access-door /usr/local/etc/access.sqlite 3
+Restart=always
+RestartSec=5s
+StandardOutput=append:/var/log/friskola-access-door3.log
+StandardError=append:/var/log/friskola-access-door3_error.log
+
+[Install]
+WantedBy=multi-user.target

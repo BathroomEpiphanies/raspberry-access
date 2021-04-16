@@ -1,5 +1,5 @@
 PKGNAME := friskola-access
-ARCH    := all
+ARCH := all
 
 VERSION := $(shell git tag --points-at HEAD)
 ifeq ($(VERSION),)
@@ -7,8 +7,9 @@ ifeq ($(VERSION),)
 endif
 
 
+BRANCH := $(shell git branch | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 UNCOMMITTED := $(shell git status --short | wc --lines)
-AHEAD :=  $(shell git status --short --branch | grep master | grep ahead | wc --lines)
+AHEAD :=  $(shell git status --short --branch | grep $(BRANCH) | grep ahead | wc --lines)
 ifneq ($(UNCOMMITTED), 0)
     STATUS := dirty
     VERSION := $(VERSION)+dirty
@@ -20,27 +21,19 @@ else
 endif
 
 
-BUILDDIR := "build/$(PKGNAME)_$(VERSION)_$(ARCH)"
-DEBFILE := "build/$(PKGNAME)_$(VERSION)_$(ARCH).deb"
+BUILDDIR := build/$(PKGNAME)_$(VERSION)_$(ARCH)
+DEBFILE := build/$(PKGNAME)_$(VERSION)_$(ARCH).deb
 
 
 package: $(DEBFILE)
 $(DEBFILE): src
-	mkdir -p "$(BUILDDIR)"
-	rsync -a "src/" "$(BUILDDIR)/"
-	mkdir -p "$(BUILDDIR)"
-	mkdir -p "$(BUILDDIR)/DEBIAN"
-	cat "control" | sed "s/PKGNAME/$(PKGNAME)/g" \
-                | sed "s/VERSION/$(VERSION)/g" \
-                | sed "s/ARCH/$(ARCH)/g" \
-                > "$(BUILDDIR)/DEBIAN/control"
-	cp preinst "$(BUILDDIR)/DEBIAN/"
-	cp postinst "$(BUILDDIR)/DEBIAN/"
-	dpkg-deb --build --root-owner-group "$(BUILDDIR)"
-
-
-install: $(DEBFILE)
-	dpkg -i "$(DEBFILE)"
+	mkdir -p $(BUILDDIR)
+	rsync -a --delete src/ $(BUILDDIR)/
+	cat control | sed "s/PKGNAME/$(PKGNAME)/g" \
+              | sed "s/VERSION/$(VERSION)/g" \
+              | sed "s/ARCH/$(ARCH)/g" \
+              > $(BUILDDIR)/DEBIAN/control
+	dpkg-deb --build --root-owner-group $(BUILDDIR)
 
 
 clean:

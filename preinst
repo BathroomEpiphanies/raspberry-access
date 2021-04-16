@@ -1,4 +1,0 @@
-if systemctl status friskola-access.service
-then
-    systemctl stop friskola-access.service
-fi

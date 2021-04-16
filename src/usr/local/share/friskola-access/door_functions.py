@@ -4,7 +4,7 @@ import time
 GPIO.setmode(GPIO.BCM)
 
 
-# System control pins, set both high to activate solid state relay
+# System control pins, set all output_pins high to activate solid state relay
 system_configurations = {
     "quatro": {
         1: {
@@ -30,6 +30,14 @@ system_configurations = {
             'wiegand_pins': (15,14),
             'button_pin':    18,
             'output_pins':  [17],
+        },
+    },
+    "single": {
+        1: {
+            'serial_port': '/dev/ttyAMA0',
+            'wiegand_pins': (15,14),
+            'button_pin':    11,
+            'output_pins':  [6,7],
         },
     },
     "ssr": {
