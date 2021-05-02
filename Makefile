@@ -1,6 +1,5 @@
 PKGNAME := friskola-access
 ARCH := all
-
 VERSION := $(shell git tag --points-at HEAD)
 ifeq ($(VERSION),)
     VERSION := 0
@@ -17,7 +16,7 @@ else ifneq ($(AHEAD), 0)
     STATUS := dirty
     VERSION := $(VERSION)+dirty
 else
-    VERSION := $(VERSION)+$(shell git log --no-walk --pretty="%h" HEAD)
+    VERSION := $(VERSION)+$(shell git log --no-walk --pretty='%h' HEAD)
 endif
 
 
@@ -29,9 +28,9 @@ package: $(DEBFILE)
 $(DEBFILE): src
 	mkdir -p $(BUILDDIR)
 	rsync -a --delete src/ $(BUILDDIR)/
-	cat control | sed "s/PKGNAME/$(PKGNAME)/g" \
-              | sed "s/VERSION/$(VERSION)/g" \
-              | sed "s/ARCH/$(ARCH)/g" \
+	cat control | sed 's/PKGNAME/$(PKGNAME)/g' \
+              | sed 's/VERSION/$(VERSION)/g' \
+              | sed 's/ARCH/$(ARCH)/g' \
               > $(BUILDDIR)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(BUILDDIR)
 
