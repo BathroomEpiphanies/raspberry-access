@@ -72,19 +72,21 @@ def unlock_door(system_type,door_number,duration):
 
 def request_access(system_type=None,door_number=None,database=None,door_name='',rfid='----------',pin='----'):
     now = time.time()
-    query = \
-        f'SELECT \
-              * \
-          FROM \
-              Tags ta INNER JOIN \
-              rTagGroup rtg ON ta.tag_id=rtg.tag_id INNER JOIN \
-              Tickets ti ON ti.group_id=rtg.group_id INNER JOIN \
-              Doors do ON do.door_id=ti.door_id \
-          WHERE \
-              do.name="{door_name}" AND \
-              ta.rfid="{rfid}" AND \
-              ti.begin<"{now}" AND ti.end>"{now}" AND \
-              (ta.pin="{pin}" OR ti.require_pin="false")'
+    query = f'''
+SELECT
+    *
+FROM
+    Tags ta INNER JOIN
+    rUserTag rut ON ta.tag_id=rut.tag_id INNER JOIN
+    rUserGroup rug ON rut.user_id=rug.user_id INNER JOIN
+    Tickets ti ON ti.group_id=rug.group_id INNER JOIN
+    Doors do ON do.door_id=ti.door_id
+WHERE
+    do.name="{door_name}" AND
+    ta.rfid="{rfid}" AND
+    ti.begin<{now} AND ti.end>{now} AND
+    (ta.pin="{pin}" OR ti.require_pin="false")
+'''
     #print(query)
     database.execute(query)
     Tickets = database.fetchall()

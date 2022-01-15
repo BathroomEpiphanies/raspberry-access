@@ -1,5 +1,6 @@
 PKGNAME := friskola-access
 ARCH := all
+
 VERSION := $(shell git tag --points-at HEAD)
 ifeq ($(VERSION),)
     VERSION := 0
@@ -21,17 +22,19 @@ endif
 
 
 BUILDDIR := build/$(PKGNAME)_$(VERSION)_$(ARCH)
+DEPLOYDIR := prodadmin@sshgateway:/var/www/proddata/www/deb/$(REPO)/$(ARCH)/
 DEBFILE := build/$(PKGNAME)_$(VERSION)_$(ARCH).deb
 
 
-package: $(DEBFILE)
-$(DEBFILE): src
+$(DEBFILE):
 	mkdir -p $(BUILDDIR)
-	rsync -a --delete src/ $(BUILDDIR)/
+	rsync -a --delete --delete-excluded --exclude '*~' --exclude '__pycache__' src/ $(BUILDDIR)/
+	python3 -m compileall $(BUILDDIR)
+	mkdir -p $(BUILDDIR)/DEBIAN
 	cat control | sed 's/PKGNAME/$(PKGNAME)/g' \
-              | sed 's/VERSION/$(VERSION)/g' \
-              | sed 's/ARCH/$(ARCH)/g' \
-              > $(BUILDDIR)/DEBIAN/control
+	            | sed 's/VERSION/$(VERSION)/g' \
+	            | sed 's/ARCH/$(ARCH)/g' \
+	            > $(BUILDDIR)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(BUILDDIR)
 
 
