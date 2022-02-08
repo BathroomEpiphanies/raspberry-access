@@ -3,4 +3,7 @@
   weekly
   compress
   missingok
+  postrotate
+    /usr/local/bin/friskola-access-restart-doors
+  endscript
 }
