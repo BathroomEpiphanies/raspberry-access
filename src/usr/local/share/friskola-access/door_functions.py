@@ -6,6 +6,48 @@ GPIO.setmode(GPIO.BCM)
 
 # System control pins, set all output_pins high to activate solid state relay
 system_configurations = {
+    "octal": {
+        1: {
+            'serial_port': '/dev/ttyAMA1',
+            'wiegand_pins': (14,15),
+            'output_pins':  [2],
+        },
+        2: {
+            'serial_port': None,
+            'wiegand_pins': (4,5),
+            'output_pins':  [3],
+        },
+        3: {
+            'serial_port': None,
+            'wiegand_pins': (22,23),
+            'output_pins':  [27],
+        },
+        4: {
+            'serial_port': None,
+            'wiegand_pins': (25,10),
+            'output_pins':  [24],
+        },
+        5: {
+            'serial_port': None,
+            'wiegand_pins': (8,9),
+            'output_pins':  [11],
+        },
+        6: {
+            'serial_port': None,
+            'wiegand_pins': (12,13),
+            'output_pins':  [7],
+        },
+        7: {
+            'serial_port': None,
+            'wiegand_pins': (19,16),
+            'output_pins':  [6],
+        },
+        8: {
+            'serial_port': None,
+            'wiegand_pins': (21,26),
+            'output_pins':  [20],
+        },
+    },
     "quatro": {
         1: {
             'serial_port': '/dev/ttyAMA4',
