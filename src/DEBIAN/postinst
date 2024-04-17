@@ -1,3 +1,5 @@
 #!/bin/bash
 
-/usr/local/bin/friskola-access-restart-doors
+python3 -m compileall /usr/share/friskola-access
+
+/usr/bin/friskola-access-restart-doors

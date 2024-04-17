@@ -11,7 +11,7 @@ if [ "${door}" != "null" ]
 then
     name="$(echo ${door} | jq -rc ".name")"
     reader="$(echo ${door} | jq -rc ".reader")"
-    /usr/local/bin/${reader}_door \
+    /usr/bin/${reader}_door \
         --system-type "${type}" \
         --door-number "${doornum}" \
         --door-name   "${name}" \

@@ -26,17 +26,23 @@ DEPLOYDIR := prodadmin@sshgateway:/var/www/proddata/www/deb/$(REPO)/$(ARCH)/
 DEBFILE := build/$(PKGNAME)_$(VERSION)_$(ARCH).deb
 
 
-$(DEBFILE):
+.PHONY: clean distclean
+$(shell mkdir -p tmp)
+$(shell touch -d @$(shell find src/ -printf "%Ts\n" | sort -n | tail -n1) src)
+
+
+$(DEBFILE): src
 	mkdir -p $(BUILDDIR)
-	rsync -a --delete --delete-excluded --exclude '*~' --exclude '__pycache__' src/ $(BUILDDIR)/
-	python3 -m compileall $(BUILDDIR)
+	rsync -a --delete --delete-excluded --exclude '*~' --exclude '__pycache__' src/ tmp/ $(BUILDDIR)/
 	mkdir -p $(BUILDDIR)/DEBIAN
-	cat control | sed 's/PKGNAME/$(PKGNAME)/g' \
-	            | sed 's/VERSION/$(VERSION)/g' \
-	            | sed 's/ARCH/$(ARCH)/g' \
-	            > $(BUILDDIR)/DEBIAN/control
+	sed -e 's/PKGNAME/$(PKGNAME)/g' \
+	    -e 's/VERSION/$(VERSION)/g' \
+	    -e 's/ARCH/$(ARCH)/g' \
+	    -i $(BUILDDIR)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(BUILDDIR)
 
 
 clean:
+	rm -rf build
+distclean:
 	rm -rf build tmp

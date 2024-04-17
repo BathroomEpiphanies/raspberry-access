@@ -7,7 +7,7 @@ StartLimitBurst=10
 [Service]
 User=root
 Type=simple
-ExecStart=/usr/local/bin/friskola-access-door /usr/local/etc/access.sqlite 1
+ExecStart=/usr/bin/friskola-access-door /usr/local/etc/access.sqlite 1
 Restart=always
 RestartSec=60s
 StandardOutput=append:/var/log/friskola-access-door1.log

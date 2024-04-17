@@ -4,6 +4,6 @@
   compress
   missingok
   postrotate
-    /usr/local/bin/friskola-access-restart-doors
+    /usr/bin/friskola-access-restart-doors
   endscript
 }
