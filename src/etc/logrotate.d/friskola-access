@@ -1,9 +1,0 @@
-/var/log/friskola-access-door*.log {
-  rotate 52
-  weekly
-  compress
-  missingok
-  postrotate
-    /usr/bin/friskola-access-restart-doors
-  endscript
-}

@@ -1,4 +1,4 @@
-PKGNAME := friskola-access
+PKGNAME := raspberry-access
 ARCH := all
 
 VERSION := $(shell git tag --points-at HEAD)
@@ -22,7 +22,6 @@ endif
 
 
 BUILDDIR := build/$(PKGNAME)_$(VERSION)_$(ARCH)
-DEPLOYDIR := prodadmin@sshgateway:/var/www/proddata/www/deb/$(REPO)/$(ARCH)/
 DEBFILE := build/$(PKGNAME)_$(VERSION)_$(ARCH).deb
 
 

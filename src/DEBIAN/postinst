@@ -1,5 +1,5 @@
 #!/bin/bash
 
-python3 -m compileall /usr/share/friskola-access
+python3 -m compileall /usr/share/raspberry-access
 
-/usr/bin/friskola-access-restart-doors
+/usr/bin/raspberry-access-restart-doors

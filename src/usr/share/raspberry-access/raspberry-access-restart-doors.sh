@@ -5,8 +5,8 @@ for service in raspberry-access-door1.service \
                raspberry-access-door3.service \
                raspberry-access-door4.service
 do
-    if systemctl --no-pager is-active $service
+    if systemctl --no-pager is-enabled $service
     then
-        systemctl stop $service
+        systemctl restart $service
     fi
 done
