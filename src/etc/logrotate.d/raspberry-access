@@ -1,0 +1,9 @@
+/var/log/raspberry-access-door*.log {
+  rotate 52
+  weekly
+  compress
+  missingok
+  postrotate
+    /usr/bin/raspberry-access-restart-doors
+  endscript
+}

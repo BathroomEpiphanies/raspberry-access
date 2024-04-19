@@ -1,0 +1,5 @@
+#!/bin/bash
+
+python3 -m compileall /usr/share/raspberry-access
+
+/usr/bin/raspberry-access-restart-doors

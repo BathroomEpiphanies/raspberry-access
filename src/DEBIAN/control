@@ -1,0 +1,12 @@
+Package: PKGNAME
+Version: VERSION
+Architecture: ARCH
+Depends: chrony,
+         jq,
+         logrotate,
+         python3-rpi.gpio,
+         python3-serial,
+         sqlite3,
+         tmux
+Maintainer: Fredrik Atmer <fredrik@atmer.se>
+Description: Access control system.

@@ -1,0 +1,18 @@
+[Unit]
+Description=Friskola Access System - Door 2
+After=networking.service
+StartLimitInterval=300
+StartLimitBurst=10
+
+[Service]
+User=root
+Type=simple
+ExecStart=/usr/bin/raspberry-access-door /usr/local/etc/access.sqlite 2
+Restart=always
+RestartSec=60s
+StandardOutput=append:/var/log/raspberry-access-door2.log
+StandardError=append:/var/log/raspberry-access-door2_error.log
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
