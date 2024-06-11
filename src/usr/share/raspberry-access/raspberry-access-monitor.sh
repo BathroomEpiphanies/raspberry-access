@@ -1,7 +1,8 @@
 #!/bin/bash
 
 /usr/bin/tmux "kill-session" -t "raspberry-access-monitor"
-/usr/bin/tmux "new-session" -d -s "raspberry-access-monitor" -n "dashboard" -- "tail -f /var/log/raspberry-access-door1.log"
+/usr/bin/tmux "new-session" -d -s "raspberry-access-monitor" -n "dashboard"
+/usr/bin/tmux "split-window" -t "raspberry-access:dashboard" -v             -- "tail -f /var/log/raspberry-access-door1.log"
 /usr/bin/tmux "split-window" -t "raspberry-access:dashboard" -v             -- "tail -f /var/log/raspberry-access-door2.log"
 /usr/bin/tmux "split-window" -t "raspberry-access:dashboard" -v             -- "tail -f /var/log/raspberry-access-door3.log"
 /usr/bin/tmux "split-window" -t "raspberry-access:dashboard" -v             -- "tail -f /var/log/raspberry-access-door4.log"
