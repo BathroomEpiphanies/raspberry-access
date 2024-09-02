@@ -1,0 +1,18 @@
+[Unit]
+Description=Friskola Access System - Door 5
+After=networking.service
+StartLimitInterval=300
+StartLimitBurst=10
+
+[Service]
+User=root
+Type=simple
+ExecStart=/usr/bin/raspberry-access-door /usr/local/etc/access.sqlite 5
+Restart=always
+RestartSec=60s
+StandardOutput=append:/var/log/raspberry-access-door5.log
+StandardError=append:/var/log/raspberry-access-door5_error.log
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
