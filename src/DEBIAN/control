@@ -4,7 +4,6 @@ Architecture: ARCH
 Depends: chrony,
          jq,
          logrotate,
-         python3-rpi.gpio,
          python3-serial,
          sqlite3,
          tmux
