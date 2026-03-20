@@ -32,7 +32,7 @@ $(shell touch -d @$(shell find src/ -printf "%Ts\n" | sort -n | tail -n1) src)
 
 $(DEBFILE): src
 	mkdir -p $(BUILDDIR)
-	rsync -a --delete --delete-excluded --exclude '*~' --exclude '__pycache__' src/ tmp/ $(BUILDDIR)/
+	rsync -a --delete --delete-excluded --exclude '*~' --exclude '__pycache__' --exclude '.mypy_cache' src/ tmp/ $(BUILDDIR)/
 	mkdir -p $(BUILDDIR)/DEBIAN
 	sed -e 's/PKGNAME/$(PKGNAME)/g' \
 	    -e 's/VERSION/$(VERSION)/g' \

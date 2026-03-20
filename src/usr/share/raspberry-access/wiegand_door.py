@@ -1,101 +1,61 @@
-#!/usr/bin/python3 -u
-
-import argparse
-import serial
-import sys
-import time
-import RPi.GPIO as GPIO
+import signal
 import sqlite3
+import time
+from collections import deque
 
-from door_functions import system_configurations,request_access,setup_relay_pins,setup_wiegand_pins
+import RPi.GPIO as GPIO
 
-
-# First and last bits are parity checks
-# mask them off and hope there are no errors...
-#
-#         1000010010101011110100000101101001
-bitmask  = 0b0111111111111111111111111111111110
-bitcount = 0
-timestamp = 0
-state = 0
-w0_pin = None
-w1_pin = None
-def wiegand(pin):
-    global bitcount
-    global state
-    global timestamp
-    global database
-    global system_type
-    global door_number
-    global door_name
-    global w0_pin
-    global w1_pin
-    t = time.time()
-    if t > timestamp + 0.005:
-        state = (0 if pin==w0_pin else 1)
-        bitcount = 1
-    else:
-        state = state*2 + (0 if pin==w0_pin else 1)
-        bitcount += 1
-    timestamp = t
-    if bitcount >= 34:
-        rfid = f'{(state&bitmask)>>1:010d}'
-        request_access(system_type=system_type,door_number=door_number,database=database,door_name=door_name,rfid=rfid,pin='')
+from door import Door
+from hardware import WiegandPins
 
 
-
-
-database = None
-door_number = None
-door_name = None
-system_type = None
-def main():
-    global database
-    global door_number
-    global door_name
-    global system_type
-    global w0_pin
-    global w1_pin
+class WiegandDoor(Door):
     
-    parser = argparse.ArgumentParser(description='Door access system.')
-    parser.add_argument('--database',
-                        required = True,
-                        help     = 'Database file [/perm/database.sqlite].')
-    parser.add_argument('--door-name',
-                        required = True,
-                        help     = 'Computer identifier [door-djurhuset,door-prototype,..].')
-    parser.add_argument('--system-type',
-                        required = True,
-                        help     = 'Circuit board type [ssr,quatro,..].')
-    parser.add_argument('--door-number',
-                        required = True,
-                        type     = int,
-                        help     = 'Physical door number [1,2,3,4].')
-    args = parser.parse_args()
+    wiegand_pins:WiegandPins
+    wiegand_stream:deque[int]
+    timestamp:float
     
-    database = sqlite3.connect(args.database,check_same_thread=False).cursor()
-    door_number = args.door_number
-    door_name = args.door_name
-    system_type = args.system_type
+    def __init__(self, connection:sqlite3.Cursor) -> None:
+        super().__init__(connection)
+        self.wiegand_pins = self.hardware[self.port].wiegand_pins
+        self.wiegand_stream = deque(maxlen=34)
+        self.timestamp = 0
+        GPIO.setup(self.wiegand_pins.w0, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.wiegand_pins.w1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.add_event_detect(self.wiegand_pins.w0, GPIO.FALLING, callback=self.interrupt_callback, bouncetime=1)
+        GPIO.add_event_detect(self.wiegand_pins.w1, GPIO.FALLING, callback=self.interrupt_callback, bouncetime=1)
     
-    setup_relay_pins(system_type,door_number)
-    setup_wiegand_pins(system_type,door_number)
+    def interrupt_callback(self, pin:int) -> None:
+        now = time.time()
+        if now>self.timestamp+0.1:
+            self.wiegand_stream.clear()
+        self.timestamp = now
+        self.wiegand_stream.append(0 if pin==self.wiegand_pins.w0 else 1)
+        rfid = self.check_rfid()
+        if rfid and self.request_access(rfid, pin='', duration=2) and time.sleep(2):
+            self.wiegand_stream.clear()
     
-    w0_pin,w1_pin = system_configurations[system_type][door_number]['wiegand_pins']
-    GPIO.add_event_detect(w0_pin,GPIO.FALLING,callback=wiegand,bouncetime=1)
-    GPIO.add_event_detect(w1_pin,GPIO.FALLING,callback=wiegand,bouncetime=1)
+    def check_rfid(self) -> str:
+        stream = list(self.wiegand_stream)
+        length = len(stream)
+        parity1 = sum(stream[:17])%2
+        parity2 = sum(stream[17:])%2
+        if length==34 and parity1==0 and parity2==1:
+            rfid = sum(d*2**p for p,d in enumerate(reversed(stream[1:-1])))
+            return f'{rfid:010d}'
+        else:
+            return ''
     
-    print(f'Starting: {time.ctime()}',flush=True)
-    while True:
-        try:
-            time.sleep(1)
-        except KeyboardInterrupt:
-            GPIO.cleanup()
-            exit(0)
-        except:
-            import traceback
-            traceback.print_exc(file=sys.stdout,flush=True)
-            pass
-
-if __name__ == '__main__':
-    main()
+    def run(self) -> None:
+        super().run()
+        while True:
+            try:
+                signal.pause()
+            except KeyboardInterrupt:
+                exit(0)
+            except:
+                import traceback
+                traceback.print_exc()
+                pass
+            finally:
+                self.lock()

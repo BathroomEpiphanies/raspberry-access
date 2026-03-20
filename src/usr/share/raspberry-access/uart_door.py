@@ -1,60 +1,70 @@
-#!/usr/bin/python3 -u
-
-import argparse
 import serial
-import sys
-import time
-import RPi.GPIO as GPIO
 import sqlite3
+import traceback
+from collections import deque
 
-from door_functions import system_configurations,request_access,setup_relay_pins,setup_wiegand_pins,raw_to_rfid
+
+from door import Door
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Door access system.')
-    parser.add_argument('--database',
-                        required = True,
-                        help     = 'Database file [/perm/database.sqlite].')
-    parser.add_argument('--door-name',
-                        required = True,
-                        help     = 'Computer identifier [door-djurhuset,door-prototype,..].')
-    parser.add_argument('--system-type',
-                        required = True,
-                        help     = 'Circuit board type [ssr,quatro,..].')
-    parser.add_argument('--door-number',
-                        required = True,
-                        type     = int,
-                        help     = 'Physical door number [1,2,3,4].')
-    args = parser.parse_args()
+class UARTDoor(Door):
     
-    database = sqlite3.connect(args.database,check_same_thread=False).cursor()
-    door_number = args.door_number
-    door_name = args.door_name
-    system_type = args.system_type
-    
-    setup_relay_pins(system_type,door_number)
-    UART = serial.Serial(system_configurations[system_type][door_number]['serial_port'],9600)
-    rfid,pin = request_access(system_type,door_number,database)
-    
-    print(f'Starting: {time.ctime()}',flush=True)
-    while True:
-        try:
-            UART.close()
-            UART.open()
-            while True:
-                c = UART.read(1)
-                if c and ord(c) == 0x11:
-                    rfid = raw_to_rfid(UART.read(16).decode('utf-8'))
-                elif c and ord(c) == 0x12:
-                    pin = pin[-3:] + UART.read(1).decode('utf-8')
-                rfid,pin = request_access(system_type,door_number,database,door_name,rfid,pin)
+    serial_port:str
+    UART:serial.serialposix.Serial
+    raw:deque[str]
+    pin:deque[str]
         
-        except KeyboardInterrupt:
-            sys.exit(0)
-        except:
-            import traceback
-            traceback.print_exc(file=sys.stdout,flush=True)
-            pass
+    def __init__(self, database:sqlite3.Cursor) -> None:
+        super().__init__(database)
+        
+        serial_port = self.hardware[self.port].serial_port
+        if not isinstance(serial_port, str):
+            raise RuntimeError(f'Port {self.port} is not connected to serial interface')
+        self.serial_port = serial_port
+        self.UART = serial.Serial(self.serial_port, 9600)
+        self.raw = deque(maxlen=16)
+        self.pin = deque(maxlen=4)
+    
+    def run(self) -> None:
+        super().run()
+        while True:
+            try:
+                self.UART.close()
+                self.UART.open()
+                while True:
+                    char = self.UART.read(1)
+                    if char and ord(char) == 0x11:
+                        self.raw.extend(self.UART.read(16).decode('utf-8'))
+                    elif char and ord(char) == 0x12:
+                        self.pin.extend(self.UART.read(1).decode('utf-8'))
+                    self.UART.read(1)
+                    raw = ''.join(self.raw)
+                    rfid = raw_to_rfid(raw)
+                    pin = ''.join(self.pin)
+                    if self.request_access(rfid, pin, duration=2):
+                        self.raw.clear()
+                        self.pin.clear()
+            except KeyboardInterrupt:
+                exit(0)
+            except:
+                traceback.print_exc()
+                pass
+            finally:
+                self.lock()
 
-if __name__ == '__main__':
-    main()
+
+def raw_to_rfid(raw:str) -> str:
+    try:
+        raw_ = int(raw, 16)
+        rfid = 0
+        rfid += (raw_ & 0b000000000_0000_0_0000_0_0000_0_0000_0_0000_0_0000_0_0000_0_1111_0_0000_0) >>  6
+        rfid += (raw_ & 0b000000000_0000_0_0000_0_0000_0_0000_0_0000_0_0000_0_1111_0_0000_0_0000_0) >>  7
+        rfid += (raw_ & 0b000000000_0000_0_0000_0_0000_0_0000_0_0000_0_1111_0_0000_0_0000_0_0000_0) >>  8
+        rfid += (raw_ & 0b000000000_0000_0_0000_0_0000_0_0000_0_1111_0_0000_0_0000_0_0000_0_0000_0) >>  9
+        rfid += (raw_ & 0b000000000_0000_0_0000_0_0000_0_1111_0_0000_0_0000_0_0000_0_0000_0_0000_0) >> 10
+        rfid += (raw_ & 0b000000000_0000_0_0000_0_1111_0_0000_0_0000_0_0000_0_0000_0_0000_0_0000_0) >> 11
+        rfid += (raw_ & 0b000000000_0000_0_1111_0_0000_0_0000_0_0000_0_0000_0_0000_0_0000_0_0000_0) >> 12
+        rfid += (raw_ & 0b000000000_1111_0_0000_0_0000_0_0000_0_0000_0_0000_0_0000_0_0000_0_0000_0) >> 13
+        return f'{rfid:010d}'
+    except ValueError:
+        return ''

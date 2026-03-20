@@ -1,8 +1,7 @@
 Package: PKGNAME
 Version: VERSION
 Architecture: ARCH
-Depends: chrony,
-         jq,
+Depends: jq,
          logrotate,
          python3-serial,
          sqlite3,
